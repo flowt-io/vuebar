@@ -53,6 +53,9 @@
 
                     draggerClass: 'vb-dragger',
                     draggerStylerClass: 'vb-dragger-styler',
+
+                    onScrollBottom: false,
+                    onScrollTop: false
                 },
 
                 // reference to binding
@@ -90,6 +93,9 @@
                 windowResize: null,
                 scrollHandler: null,
                 wheelHandler: null,
+
+                // used for remember when we hit the top/bottom for a single event fire per hit
+                scrollPositionReached: 'top', // default to top
 
             };
             return el._vuebarState;
@@ -247,6 +253,31 @@
 
             }
 
+            // update where we are in the scroll
+            if (state.el2.scrollTop == '0') {
+                // do we have an method to call?
+                if (state.config.onScrollTop != false && state.scrollPositionReached != 'top')
+                {
+                    state.config.onScrollTop();
+                }
+
+                // we are at the top
+                state.scrollPositionReached = 'top';
+            }
+            else if (state.el2.scrollTop == state.el2.scrollHeight - state.el2.clientHeight) {
+                // do we have an method to call?
+                if (state.config.onScrollBottom != false && state.scrollPositionReached != 'bottom')
+                {
+                    state.config.onScrollBottom();
+                }
+
+                // we are at the bottom
+                state.scrollPositionReached = 'bottom';
+            }
+            else {
+                // not at the top or the bottom
+                state.scrollPositionReached = false;
+            }
         }
 
 
@@ -327,6 +358,17 @@
             state.el2.scrollTop = state.scrollTop;
         }
 
+        function scrollToTop(el)
+        {
+            var state = getState(el);
+            state.el2.scrollTop = 0;
+        }
+
+        function scrollToBottom(el)
+        {
+            var state = getState(el);
+            state.el2.scrollTop = state.el2.scrollHeight;
+        }
 
 
 
@@ -657,6 +699,8 @@
                 initScrollbar: initScrollbar,
                 destroyScrollbar: destroyScrollbar,
                 refreshScrollbar: refreshScrollbar,
+                scrollToTop: scrollToTop,
+                scrollToBottom: scrollToBottom,
             };
         }
         Vue.vuebar = publicMethods();
